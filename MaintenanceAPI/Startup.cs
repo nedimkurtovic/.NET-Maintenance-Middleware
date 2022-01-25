@@ -1,16 +1,12 @@
+using MaintenanceAPI.Middlewares;
+using MaintenanceAPI.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MaintenanceAPI
 {
@@ -28,6 +24,13 @@ namespace MaintenanceAPI
         {
 
             services.AddControllers();
+
+            services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(
+ 
+                Configuration.GetConnectionString("Local"),
+                ma => ma.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
+            ));
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MaintenanceAPI", Version = "v1" });
@@ -43,12 +46,14 @@ namespace MaintenanceAPI
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "MaintenanceAPI v1"));
             }
-
+            app.UseCustomExceptionHandler();
             app.UseHttpsRedirection();
 
             app.UseRouting();
 
             app.UseAuthorization();
+            
+            app.UseMaintenanceMiddleware();
 
             app.UseEndpoints(endpoints =>
             {
