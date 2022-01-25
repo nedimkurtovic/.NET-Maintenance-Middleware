@@ -30,7 +30,7 @@ namespace MaintenanceAPI
                 Configuration.GetConnectionString("Local"),
                 ma => ma.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
             ));
-            
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MaintenanceAPI", Version = "v1" });
@@ -53,7 +53,7 @@ namespace MaintenanceAPI
 
             app.UseAuthorization();
             
-            app.UseMaintenanceMiddleware();
+            app.UseMaintenanceExample1Middleware();
 
             app.UseEndpoints(endpoints =>
             {

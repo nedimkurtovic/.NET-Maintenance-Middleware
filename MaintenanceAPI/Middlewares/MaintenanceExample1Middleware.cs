@@ -3,11 +3,8 @@ using MaintenanceAPI.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MaintenanceAPI.Middlewares
@@ -18,11 +15,14 @@ namespace MaintenanceAPI.Middlewares
         public string Controller { get; set; }
         public bool AllActions => Action == "*";
     }
-    public class MaintenanceMiddleware
+    //this middleware will query the database for the last maintenance and check whether its enabled
+    //if enabled it will check whether the whole site is affected and if true, will check whether the
+    //target endpoint is contained in the allowed endpoints
+    public class MaintenanceExample1Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IEnumerable<Endpoint> _allowedEndpoints;
-        public MaintenanceMiddleware(RequestDelegate next)
+        public MaintenanceExample1Middleware(RequestDelegate next)
         {
             _next = next;
             _allowedEndpoints = new List<Endpoint>
@@ -59,10 +59,10 @@ namespace MaintenanceAPI.Middlewares
             await _next(context);
         }
     }
-    public static class MaintenanceMiddlewareExtensions {
-        public static IApplicationBuilder UseMaintenanceMiddleware(this IApplicationBuilder builder)
+    public static class MaintenanceExample1MiddlewareExtensions {
+        public static IApplicationBuilder UseMaintenanceExample1Middleware(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<MaintenanceMiddleware>();
+            return builder.UseMiddleware<MaintenanceExample1Middleware>();
         }
     }
 }
