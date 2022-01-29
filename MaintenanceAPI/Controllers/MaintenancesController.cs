@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using MaintenanceAPI.Models.Requests;
+using MaintenanceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MaintenanceAPI.Controllers
@@ -11,20 +9,35 @@ namespace MaintenanceAPI.Controllers
     [ApiController]
     public class MaintenancesController : ControllerBase
     {
-        [HttpGet("last")]
-        public IActionResult Get()
+        private readonly IMaintenanceService _maintenanceService;
+
+        public MaintenancesController(IMaintenanceService maintenanceService)
         {
-            return Ok();
+            _maintenanceService = maintenanceService;
+        }
+        [HttpGet("last")]
+        public async Task<IActionResult> Get()
+        {
+            var lastMaintenance = await _maintenanceService.GetLastMaintenance();
+            return Ok(lastMaintenance);
+        }
+        [HttpGet("endpoints")]
+        public async Task<IActionResult> GetAvailableEndpoints()
+        {
+            var endpoints = await _maintenanceService.GetAvailableEndpoints();
+            return Ok(endpoints);
         }
         [HttpPost()]
-        public IActionResult CreateMaintenance()
+        public async Task<IActionResult> CreateMaintenance(CreateMaintenanceRequest request)
         {
-            return Ok();
+            await _maintenanceService.CreateMaintenance(request);
+            return NoContent();
         }
-        [HttpPatch("{maintenanceId}/disable")]
-        public IActionResult DisableMaintenance(int maintenanceId)
+        [HttpPatch("last/disable")]
+        public async Task<IActionResult> DisableLastMaintenance()
         {
-            return Ok();
+            await _maintenanceService.DisableLastMaintenance();
+            return NoContent();
         }
     }
 }
