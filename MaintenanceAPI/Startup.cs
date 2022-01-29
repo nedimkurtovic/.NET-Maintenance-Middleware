@@ -1,7 +1,9 @@
 using MaintenanceAPI.Middlewares;
 using MaintenanceAPI.Persistence;
+using MaintenanceAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,10 @@ namespace MaintenanceAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRouting(options =>
+            {
+                options.LowercaseUrls = true;
+            });
 
             services.AddControllers();
 
@@ -30,6 +36,8 @@ namespace MaintenanceAPI
                 Configuration.GetConnectionString("Local"),
                 ma => ma.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)
             ));
+
+            services.AddTransient<IMaintenanceService, MaintenanceService>();
 
             services.AddSwaggerGen(c =>
             {
@@ -52,8 +60,9 @@ namespace MaintenanceAPI
             app.UseRouting();
 
             app.UseAuthorization();
-            
-            app.UseMaintenanceExample1Middleware();
+
+            //app.UseMaintenanceExample1Middleware();
+            app.UseMaintenanceExample2Middleware();
 
             app.UseEndpoints(endpoints =>
             {
