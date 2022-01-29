@@ -1,4 +1,5 @@
 ﻿using MaintenanceAPI.Exceptions;
+using MaintenanceAPI.Models;
 using MaintenanceAPI.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -9,34 +10,31 @@ using System.Threading.Tasks;
 
 namespace MaintenanceAPI.Middlewares
 {
-    public class Endpoint
-    {
-        public string Action { get; set; }
-        public string Controller { get; set; }
-        public bool AllActions => Action == "*";
-    }
     //this middleware will query the database for the last maintenance and check whether its enabled
     //if enabled it will check whether the whole site is affected and if true, will check whether the
     //target endpoint is contained in the allowed endpoints
     public class MaintenanceExample1Middleware
     {
         private readonly RequestDelegate _next;
-        private readonly IEnumerable<Endpoint> _allowedEndpoints;
+        private readonly IEnumerable<CustomEndpoint> _allowedEndpoints;
         public MaintenanceExample1Middleware(RequestDelegate next)
         {
             _next = next;
-            _allowedEndpoints = new List<Endpoint>
+            _allowedEndpoints = new List<CustomEndpoint>
             {
-                new Endpoint { Action = "*", Controller = "WeatherForecast"},
-                new Endpoint { Action = "*", Controller = "AllAllowed" },
-                new Endpoint { Action = "One", Controller = "PartiallyAllowed" },
-                new Endpoint { Action = "*", Controller = "Maintenances" },
+                new CustomEndpoint { Action = "*", Controller = "WeatherForecast"},
+                new CustomEndpoint { Action = "*", Controller = "AllAllowed" },
+                new CustomEndpoint { Action = "One", Controller = "PartiallyAllowed" },
+                new CustomEndpoint { Action = "*", Controller = "Maintenances" },
             };
         }
         public async Task InvokeAsync(HttpContext context, ApplicationDbContext dbContext)
         {
             var endpoint = context.GetEndpoint();
-            var lastMaintenance = dbContext.Maintenances.LastOrDefault();
+            var lastMaintenance = dbContext.Maintenances
+                .OrderByDescending(x => x.Created)
+                .FirstOrDefault();
+            
             if(endpoint != null && (lastMaintenance?.Enabled ?? false))
             {
                 var descriptor = endpoint.Metadata
