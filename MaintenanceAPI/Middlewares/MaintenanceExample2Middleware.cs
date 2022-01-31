@@ -44,6 +44,8 @@ namespace MaintenanceAPI.Middlewares
                 var controller = descriptor.ControllerName;
                 var routeTemplate = (endpoint as RouteEndpoint).RoutePattern.RawText.ToLower();
 
+                var allowedEndpointsContainTargetEndpoint = _allowedEndpoints.Any(x => (x.AllActions && x.Controller == controller) || (!x.AllActions
+                            && x.Controller == controller && x.Action == action));
                 //if maintenance disabled whole site and if current endpoint is not targeting
                 //one of the allowed endpoints
                 //1st condition: (if allowedEndpoint has all actions allowed and target endpoint matches controller, return true)
@@ -51,17 +53,20 @@ namespace MaintenanceAPI.Middlewares
                 //we use ! operator to ask if theres no items that correspond to this conditions, in that case we throw an exception
                 if (lastMaintenance.AllAffected)
                 {
-                    if(!_allowedEndpoints.Any(x => (x.AllActions && x.Controller == controller) || (!x.AllActions
-                            && x.Controller == controller && x.Action == action)))
+                    if(!allowedEndpointsContainTargetEndpoint)
                     {
                         throw new MaintenanceException("Entire page is under the maintenance.");
                     }
                 }
                 //if the whole site is not affected, then check if the target action, controller, routepattern
-                //exist under the affected endpoints.
+                //exist under the affected endpoints. However, we still have to check whether the target endpoint belongs
+                //to the list of allowed endpoints. We can't allow user to disable maintenances endpoints, can we?
+                //Well maybe if we wanted to explicitly disable those endpoints and only allow them to be changed
+                //directly through db. For this version, I'll leave it like this, which means that you cant disable
+                //allowed list of endpoints
                 else
                 {
-                    if(lastMaintenance.AffectedEndpoints.Any(x => x.Controller == controller
+                    if(!allowedEndpointsContainTargetEndpoint && lastMaintenance.AffectedEndpoints.Any(x => x.Controller == controller
                         && x.Action == x.Action && x.RouteTemplate == routeTemplate))
                     {
                         throw new MaintenanceException("The endpoint that you are trying to access is currently disabled.");
