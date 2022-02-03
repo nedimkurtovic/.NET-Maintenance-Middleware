@@ -112,7 +112,7 @@ namespace MaintenanceAPI.Services
             //but its probably better to let the user know that its not intended to provide allAffected as true,
             //which will disable whole portal (except specific allowed endpoints which are defined in middleware),
             //and additionally specify affectedEndpoints. Customize validation to your needs and business logic.
-            if (allAfected && affectedEndpoints.Count() > 0)
+            if (allAfected && affectedEndpoints?.Count() > 0)
             {
                 throw new RequestValidationException("You cannot specify affected endpoints if you selected whole site to be affected");
             }

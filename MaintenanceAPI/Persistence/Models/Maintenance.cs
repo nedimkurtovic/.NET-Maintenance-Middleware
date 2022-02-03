@@ -20,7 +20,7 @@ namespace MaintenanceAPI.Persistence.Models
             AllAffected = allAffected;
             Enabled = true;
             Created = DateTime.UtcNow;
-            AffectedEndpoints = affectedEndpoints.Select(x => new MaintenanceEndpoint(x)).ToList();
+            AffectedEndpoints = affectedEndpoints != null ? affectedEndpoints.Select(x => new MaintenanceEndpoint(x)).ToList() : new List<MaintenanceEndpoint>();
         }
         public Maintenance()
         {
